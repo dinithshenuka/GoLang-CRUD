@@ -95,7 +95,7 @@ swag init -g cmd/main.go
 ```
 
 ## API Usage
-Once the server is running, you can access the API at http://localhost:8080z
+Once the server is running, you can access the API at http://localhost:8080
 
 ## License
 
