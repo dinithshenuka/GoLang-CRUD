@@ -12,16 +12,19 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
-// MockBookService implements the service.BookService interface for testing
 type MockBookService struct {
 	SearchBooksFunc func(keyword string) ([]models.Book, error)
 }
 
-// Implement all required methods of the BookService interface
 func (m *MockBookService) GetAllBooks() ([]models.Book, error) {
 	return nil, nil
+}
+
+func (m *MockBookService) GetPaginatedBooks(params models.PaginationParams) ([]models.Book, int, error) {
+	return nil, 0, nil
 }
 
 func (m *MockBookService) GetBookByID(id string) (models.Book, error) {
@@ -40,12 +43,10 @@ func (m *MockBookService) DeleteBook(id string) error {
 	return nil
 }
 
-// This is the method we're actually testing
 func (m *MockBookService) SearchBooks(keyword string) ([]models.Book, error) {
 	return m.SearchBooksFunc(keyword)
 }
 
-// Setup test data
 func createTestBooks() []models.Book {
 	publishDate, _ := time.Parse("2006-01-02", "1925-04-10")
 
@@ -80,13 +81,9 @@ func createTestBooks() []models.Book {
 }
 
 func TestSearchBooks(t *testing.T) {
-	// Create test data
 	testBooks := createTestBooks()
-
-	// Setup Gin in test mode
 	gin.SetMode(gin.TestMode)
 
-	// Test cases
 	tests := []struct {
 		name           string
 		query          string
@@ -96,11 +93,9 @@ func TestSearchBooks(t *testing.T) {
 		checkResponse  bool
 	}{
 		{
-			name:  "Empty search term",
-			query: "",
-			setupMock: func(m *MockBookService) {
-				// Mock won't be called due to validation check
-			},
+			name:           "Empty search term",
+			query:          "",
+			setupMock:      func(m *MockBookService) {},
 			expectedStatus: http.StatusBadRequest,
 			checkResponse:  false,
 		},
@@ -121,7 +116,6 @@ func TestSearchBooks(t *testing.T) {
 			query: "gatsby",
 			setupMock: func(m *MockBookService) {
 				m.SearchBooksFunc = func(keyword string) ([]models.Book, error) {
-					// Only return Gatsby book for this query
 					return []models.Book{testBooks[0]}, nil
 				}
 			},
@@ -134,7 +128,6 @@ func TestSearchBooks(t *testing.T) {
 			query: "innocence",
 			setupMock: func(m *MockBookService) {
 				m.SearchBooksFunc = func(keyword string) ([]models.Book, error) {
-					// Only return Mockingbird book for this query
 					return []models.Book{testBooks[1]}, nil
 				}
 			},
@@ -147,7 +140,6 @@ func TestSearchBooks(t *testing.T) {
 			query: "novel",
 			setupMock: func(m *MockBookService) {
 				m.SearchBooksFunc = func(keyword string) ([]models.Book, error) {
-					// Return all books for "novel" query
 					return testBooks, nil
 				}
 			},
@@ -160,7 +152,6 @@ func TestSearchBooks(t *testing.T) {
 			query: "GATSBY",
 			setupMock: func(m *MockBookService) {
 				m.SearchBooksFunc = func(keyword string) ([]models.Book, error) {
-					// Check that the service receives the query exactly as sent
 					if keyword != "GATSBY" {
 						return nil, fmt.Errorf("expected keyword GATSBY, got %s", keyword)
 					}
@@ -184,59 +175,33 @@ func TestSearchBooks(t *testing.T) {
 		},
 	}
 
-	// Run each test case
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create a new mock service for each test
 			mockService := &MockBookService{}
-
-			// Set up the mock behavior for this test
 			if tt.setupMock != nil {
 				tt.setupMock(mockService)
 			}
 
-			// Create the handler with the mock service
 			handler := handlers.NewBookHandler(mockService)
-
-			// Set up the Gin router with our endpoint
 			router := gin.New()
 			router.GET("/books/search", handler.SearchBooks)
 
-			// Create a test request
 			req, _ := http.NewRequest("GET", "/books/search?q="+tt.query, nil)
 			resp := httptest.NewRecorder()
-
-			// Perform the request
 			router.ServeHTTP(resp, req)
 
-			// Check status code
-			if tt.expectedStatus != resp.Code {
-				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, resp.Code)
-			}
+			assert.Equal(t, tt.expectedStatus, resp.Code, "Status code should match expected")
 
-			// For successful responses, check the returned books
 			if tt.checkResponse && tt.expectedStatus == http.StatusOK {
 				var responseBooks []models.Book
 				err := json.Unmarshal(resp.Body.Bytes(), &responseBooks)
+				assert.NoError(t, err, "Response should be valid JSON")
 
-				// Make sure we can parse the response
-				if err != nil {
-					t.Fatalf("Failed to parse response body: %v", err)
-				}
-
-				// Check that the books match what we expected
-				if len(tt.expectedBooks) != len(responseBooks) {
-					t.Errorf("Expected %d books, got %d", len(tt.expectedBooks), len(responseBooks))
-				}
+				assert.Equal(t, len(tt.expectedBooks), len(responseBooks), "Number of books should match")
 
 				if len(tt.expectedBooks) > 0 && len(responseBooks) > 0 {
-					// Check the details of the first book
-					if tt.expectedBooks[0].BookID != responseBooks[0].BookID {
-						t.Errorf("Expected BookID %s, got %s", tt.expectedBooks[0].BookID, responseBooks[0].BookID)
-					}
-					if tt.expectedBooks[0].Title != responseBooks[0].Title {
-						t.Errorf("Expected Title %s, got %s", tt.expectedBooks[0].Title, responseBooks[0].Title)
-					}
+					assert.Equal(t, tt.expectedBooks[0].BookID, responseBooks[0].BookID, "Book ID should match")
+					assert.Equal(t, tt.expectedBooks[0].Title, responseBooks[0].Title, "Book title should match")
 				}
 			}
 		})
