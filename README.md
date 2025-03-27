@@ -1,26 +1,48 @@
 # GoLang-CRUD
 
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [API Endpoints](#api-endpoints)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Setup and Running Options](#setup-and-running-options)
+  - [Local Development](#local-development)
+  - [Docker](#docker)
+  - [Kubernetes (Minikube)](#kubernetes-minikube)
+- [Environment Configuration](#environment-configuration)
+- [API Documentation](#api-documentation)
+- [Pagination](#pagination)
+- [Search Functionality](#search-functionality)
+- [Testing](#testing)
+- [License](#license)
+
 ## Overview
-A RESTful API for managing book data built with Go and Gin. This project implements complete CRUD operations for a book entity, with data persistence using JSON files.
+A RESTful API for managing book data built with Go and Gin. This project implements complete CRUD operations for a book entity, with data persistence using JSON files and support for Docker and Kubernetes deployment.
 
 ## Features
 - RESTful API with JSON support
 - Complete CRUD operations (Create, Read, Update, Delete)
-- Search functionality using Go concurrency
-- 3-tier architecture for clean separation of concerns
+- Pagination support for listing books
+- Search functionality with automatic concurrency for large datasets
+- 3-tier architecture (handler, service, repository)
 - API documentation using Swagger
 - File-based persistence (JSON)
+- Docker containerization
+- Kubernetes deployment support
+- Comprehensive error handling
 
 ## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/books` | List all books |
+| GET | `/books` | List all books (with pagination) |
 | POST | `/books` | Create a new book |
 | GET | `/books/{id}` | Get a book by ID |
 | PUT | `/books/{id}` | Update a book by ID |
 | DELETE | `/books/{id}` | Delete a book by ID |
 | GET | `/books/search?q={keyword}` | Search books by keyword |
+| GET | `/swagger/*any` | Swagger documentation |
 
 ## Project Structure
 ```
@@ -28,26 +50,36 @@ A RESTful API for managing book data built with Go and Gin. This project impleme
 ├── cmd/
 │   └── main.go               # Application entry point
 ├── internal/
-│   ├── handlers/             # Gin handlers for endpoints
-│   ├── middleware/           # Custom middleware
+│   ├── handlers/             # HTTP handlers for endpoints
 │   ├── models/               # Data models/DTOs
 │   ├── routes/               # Route definitions
 │   ├── service/              # Business logic
 │   └── repository/           # Data access layer
 ├── pkg/
-│   ├── errors/               # Custom error types
-│   └── utils/                # Utility functions
+│   └── errors/               # Custom error types
 ├── docs/                     # Swagger documentation
 ├── data/                     # JSON data storage
-└── tests/                    # Unit and integration tests
+├── k8s/                      # Kubernetes configuration
+│   ├── cleanup.sh            # Script to clean up K8s resources
+│   ├── configmap.yaml        # ConfigMap for environment variables
+│   ├── deploy.sh             # Script to deploy to Minikube
+│   ├── deployment.yaml       # Deployment configuration
+│   ├── persistence.yaml      # PV and PVC configuration
+│   └── service.yaml          # Service configuration
+├── tests/                    # Unit and integration tests
+├── Dockerfile                # Docker configuration
+└── docker-compose.yml        # Docker Compose configuration
 ```
 
-## Setup and Installation
+## Prerequisites
+- Go 1.24.1 or higher
+- Docker (optional, for containerization)
+- Minikube (optional, for Kubernetes deployment)
+- kubectl (optional, for Kubernetes deployment)
 
-### Prerequisites
-- Go 1.18 or higher
+## Setup and Running Options
 
-### Installation
+### Local Development
 1. Clone the repository
    ```bash
    git clone https://github.com/dinithshenuka/GoLang-CRUD.git
@@ -59,19 +91,56 @@ A RESTful API for managing book data built with Go and Gin. This project impleme
    go mod download
    ```
 
-3. Build the application
+3. Create a data directory (if it doesn't exist)
    ```bash
-   go build -o bookapi ./cmd/main.go
+   mkdir -p data
    ```
 
-4. Run the application
+4. Run the application directly
    ```bash
-   ./bookapi
-   # Or directly using Go
    go run cmd/main.go
    ```
+   
+### Docker
+1. Build and run using Docker Compose
+   ```bash
+   docker-compose up --build
+   ```
 
-### Environment Configuration
+2. Run in detached mode
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Stop the container
+   ```bash
+   docker-compose down
+   ```
+
+### Kubernetes (Minikube)
+1. Start Minikube (if not already running)
+   ```bash
+   minikube start
+   ```
+
+2. Deploy the application
+   ```bash
+   ./k8s/deploy.sh
+   ```
+
+3. Access the application
+   ```bash
+   # The deploy script will provide a URL to access the service
+   # or you can run:
+   minikube service golang-crud --url
+   ```
+
+4. Clean up when done
+   ```bash
+   ./k8s/cleanup.sh
+   ```
+
+## Environment Configuration
 Create a `.env` file in the root directory with the following variables:
 ```
 PORT=8080
@@ -94,8 +163,52 @@ To update the Swagger documentation, run:
 swag init -g cmd/main.go
 ```
 
-## API Usage
-Once the server is running, you can access the API at http://localhost:8080
+## Pagination
+The API supports pagination for listing books:
+
+```
+GET /books?limit=10&offset=0
+```
+
+Parameters:
+- `limit`: Number of books to return (default: 10)
+- `offset`: Starting position (default: 0)
+
+Response includes pagination metadata:
+```json
+{
+  "data": [...],
+  "totalCount": 100,
+  "limit": 10,
+  "offset": 0
+}
+```
+
+## Search Functionality
+The API provides a search endpoint that automatically uses concurrency for large datasets:
+
+```
+GET /books/search?q=keyword
+```
+
+The search functionality:
+- Looks for matches in book titles and descriptions
+- Uses a case-insensitive search
+- Automatically switches to concurrent search when the dataset has more than 100 books
+- Returns an empty array if no matches are found
+- Requires a non-empty search term
+
+## Testing
+Run the tests with:
+
+```bash
+go test ./...
+```
+
+For specific tests:
+```bash
+go test ./tests/book_search_test.go
+```
 
 ## License
 
