@@ -1,7 +1,7 @@
 // File: main.go
 // Purpose: Entry point for the application.
 // Created: 26-03-2025
-// Last modified: 26-03-2025
+// Last modified: 27-03-2025 | local imports update
 
 package main
 
@@ -20,7 +20,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	// These will be your local imports - adjust the path as needed
+	//local imports
 	"GoLang-CRUD/docs"
 	"GoLang-CRUD/internal/handlers"
 	"GoLang-CRUD/internal/repository"
@@ -57,24 +57,16 @@ func main() {
 		log.Fatalf("Failed to create data directory: %v", err)
 	}
 
-	// Set up repository
+	// Set up
 	bookFile := fmt.Sprintf("%s/books.json", dataDir)
 	repo := repository.NewJSONFileRepository(bookFile)
-
-	// Initialize service with repository
 	bookService := service.NewBookService(repo)
-
-	// Initialize handlers
 	bookHandler := handlers.NewBookHandler(bookService)
-
-	// Set up routes
 	routes.SetupRoutes(r, bookHandler)
-
-	// Set up Swagger
 	docs.SwaggerInfo.BasePath = "/"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Get port from environment or use default
+	// Get port from env
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -94,7 +86,7 @@ func main() {
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shut down the server
+	// shut down the server
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
