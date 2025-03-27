@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-crud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: golang-crud
+  template:
+    metadata:
+      labels:
+        app: golang-crud
+    spec:
+      containers:
+      - name: golang-crud
+        image: golang-crud:v1
+        imagePullPolicy: Never  # Use this for local Minikube images
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: golang-crud-config
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        readinessProbe:
+          httpGet:
+            path: /books
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /books
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: golang-crud-pvc
