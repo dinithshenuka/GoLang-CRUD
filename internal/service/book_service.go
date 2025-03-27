@@ -1,6 +1,7 @@
 // File: book_service.go
 // Purpose: Service layer for book operations
 // Created on: 26-03-2025
+// Last modified: 27-03-2025 | search func update and pagination
 
 package service
 
@@ -17,6 +18,7 @@ import (
 // interface for book business operations
 type BookService interface {
 	GetAllBooks() ([]models.Book, error)
+	GetPaginatedBooks(params models.PaginationParams) ([]models.Book, int, error)
 	GetBookByID(id string) (models.Book, error)
 	CreateBook(request models.CreateBookRequest) (models.Book, error)
 	UpdateBook(id string, request models.UpdateBookRequest) (models.Book, error)
@@ -39,6 +41,33 @@ func NewBookService(repo repository.BookRepository) BookService {
 // GetAllBooks returns all books
 func (s *bookService) GetAllBooks() ([]models.Book, error) {
 	return s.repo.GetAll()
+}
+
+// GetPaginatedBooks returns a paginated list of books
+func (s *bookService) GetPaginatedBooks(params models.PaginationParams) ([]models.Book, int, error) {
+	// Get all books
+	books, err := s.repo.GetAll()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get total count
+	totalCount := len(books)
+
+	// Apply pagination
+	start := params.Offset
+	end := params.Offset + params.Limit
+
+	// Handle boundary cases
+	if start >= len(books) {
+		return []models.Book{}, totalCount, nil
+	}
+	if end > len(books) {
+		end = len(books)
+	}
+
+	// Return the paginated slice
+	return books[start:end], totalCount, nil
 }
 
 // GetBookByID returns a book by ID

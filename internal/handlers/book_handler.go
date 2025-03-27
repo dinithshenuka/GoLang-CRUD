@@ -1,12 +1,14 @@
 // File: book_handler.go
 // Purpose: HTTP handlers for book endpoints
 // Created on: 26-03-2025
+// Last modified: 27-03-2025 | pagination response
 
 package handlers
 
 import (
 	"GoLang-CRUD/internal/repository"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,21 +32,47 @@ func NewBookHandler(service service.BookService) *BookHandler {
 
 // GetBooks godoc
 // @Summary Get all books
-// @Description Get a list of all books
+// @Description Get a paginated list of books
 // @Tags books
 // @Accept json
 // @Produce json
-// @Success 200 {array} models.BookResponse
+// @Param limit query int false "Limit the number of results (default: 10)"
+// @Param offset query int false "Offset for pagination (default: 0)"
+// @Success 200 {object} models.PaginatedResponse
+// @Failure 400 {object} errors.ErrorResponse
 // @Failure 500 {object} errors.ErrorResponse
 // @Router /books [get]
 func (h *BookHandler) GetBooks(c *gin.Context) {
-	books, err := h.service.GetAllBooks()
+	// Parse pagination parameters
+	limitStr := c.DefaultQuery("limit", "10")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit parameter"})
+		return
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid offset parameter"})
+		return
+	}
+
+	// Create pagination params
+	pagination := models.NewPaginationParams(limit, offset)
+
+	// Get paginated books from service
+	books, totalCount, err := h.service.GetPaginatedBooks(pagination)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, books)
+	// Create paginated response
+	response := models.NewPaginatedResponse(books, totalCount, pagination.Limit, pagination.Offset)
+
+	c.JSON(http.StatusOK, response)
 }
 
 // GetBookByID godoc
