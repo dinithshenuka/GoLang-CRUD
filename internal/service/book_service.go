@@ -26,7 +26,6 @@ type BookService interface {
 	SearchBooks(keyword string) ([]models.Book, error)
 }
 
-// bookService implements BookService
 type bookService struct {
 	repo repository.BookRepository
 }
@@ -38,27 +37,23 @@ func NewBookService(repo repository.BookRepository) BookService {
 	}
 }
 
-// GetAllBooks returns all books
+// Get All Books
 func (s *bookService) GetAllBooks() ([]models.Book, error) {
 	return s.repo.GetAll()
 }
 
-// GetPaginatedBooks returns a paginated list of books
+// return paginated list of books
 func (s *bookService) GetPaginatedBooks(params models.PaginationParams) ([]models.Book, int, error) {
-	// Get all books
 	books, err := s.repo.GetAll()
 	if err != nil {
 		return nil, 0, err
 	}
 
-	// Get total count
 	totalCount := len(books)
 
-	// Apply pagination
 	start := params.Offset
 	end := params.Offset + params.Limit
 
-	// Handle boundary cases
 	if start >= len(books) {
 		return []models.Book{}, totalCount, nil
 	}
@@ -66,70 +61,59 @@ func (s *bookService) GetPaginatedBooks(params models.PaginationParams) ([]model
 		end = len(books)
 	}
 
-	// Return the paginated slice
 	return books[start:end], totalCount, nil
 }
 
-// GetBookByID returns a book by ID
+// get book by ID
 func (s *bookService) GetBookByID(id string) (models.Book, error) {
 	return s.repo.GetByID(id)
 }
 
-// CreateBook creates a new book
+// create new book
 func (s *bookService) CreateBook(request models.CreateBookRequest) (models.Book, error) {
-	// Generate a new UUID for the book
 	bookID := uuid.New().String()
-
-	// Convert request to Book entity
 	book := request.ToBook(bookID)
 
-	// Additional validation if needed
 	if err := book.Validate(); err != nil {
 		return models.Book{}, err
 	}
 
-	// Create book in repository
 	return s.repo.Create(book)
 }
 
-// UpdateBook updates a book
+// updates book
 func (s *bookService) UpdateBook(id string, request models.UpdateBookRequest) (models.Book, error) {
-	// Get existing book
 	existingBook, err := s.repo.GetByID(id)
 	if err != nil {
 		return models.Book{}, err
 	}
 
-	// Apply updates
 	request.UpdateBook(&existingBook)
 
-	// Additional validation if needed
 	if err := existingBook.Validate(); err != nil {
 		return models.Book{}, err
 	}
 
-	// Update book in repository
 	return s.repo.Update(id, existingBook)
 }
 
-// DeleteBook deletes a book
+// delete a book
 func (s *bookService) DeleteBook(id string) error {
 	return s.repo.Delete(id)
 }
 
-// SearchBooks searches for books matching the keyword using concurrency
+// search
+// sequential or concurrent
 func (s *bookService) SearchBooks(keyword string) ([]models.Book, error) {
 	if keyword == "" {
 		return []models.Book{}, nil
 	}
 
-	// Get all books
 	books, err := s.repo.GetAll()
 	if err != nil {
 		return nil, err
 	}
 
-	// If we have a small number of books, skip concurrency
 	if len(books) < 100 {
 		return s.searchBooksSequential(books, keyword)
 	}
@@ -137,7 +121,7 @@ func (s *bookService) SearchBooks(keyword string) ([]models.Book, error) {
 	return s.searchBooksConcurrent(books, keyword)
 }
 
-// searchBooksSequential searches for books matching the keyword sequentially
+// sequentially
 func (s *bookService) searchBooksSequential(books []models.Book, keyword string) ([]models.Book, error) {
 	keyword = strings.ToLower(keyword)
 	var results []models.Book
@@ -152,44 +136,32 @@ func (s *bookService) searchBooksSequential(books []models.Book, keyword string)
 	return results, nil
 }
 
-// searchBooksConcurrent searches for books matching the keyword using concurrency
+// concurrency
 func (s *bookService) searchBooksConcurrent(books []models.Book, keyword string) ([]models.Book, error) {
 	keyword = strings.ToLower(keyword)
 
-	// Calculate number of goroutines to use (one per CPU core is a good default)
 	numWorkers := 4
-
-	// Calculate chunk size
 	chunkSize := (len(books) + numWorkers - 1) / numWorkers
-
-	// Create a channel to receive results
 	resultsChan := make(chan []models.Book, numWorkers)
-
-	// Create a WaitGroup to wait for all goroutines to finish
 	var wg sync.WaitGroup
 
-	// Launch workers
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 
-		// Calculate start and end index for this worker
 		start := i * chunkSize
 		end := start + chunkSize
 		if end > len(books) {
 			end = len(books)
 		}
 
-		// Skip if this chunk is empty
 		if start >= len(books) {
 			wg.Done()
 			continue
 		}
 
-		// Launch worker
 		go func(start, end int) {
 			defer wg.Done()
 
-			// Search this chunk
 			var results []models.Book
 			for j := start; j < end; j++ {
 				book := books[j]
@@ -199,18 +171,15 @@ func (s *bookService) searchBooksConcurrent(books []models.Book, keyword string)
 				}
 			}
 
-			// Send results
 			resultsChan <- results
 		}(start, end)
 	}
 
-	// Close results channel when all workers are done
 	go func() {
 		wg.Wait()
 		close(resultsChan)
 	}()
 
-	// Collect results
 	var results []models.Book
 	for workerResults := range resultsChan {
 		results = append(results, workerResults...)

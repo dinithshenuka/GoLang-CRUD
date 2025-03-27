@@ -18,12 +18,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// BookHandler handles HTTP requests for books
+// HTTP requests for books
 type BookHandler struct {
 	service service.BookService
 }
 
-// NewBookHandler creates a new BookHandler
+// creates a new BookHandler
 func NewBookHandler(service service.BookService) *BookHandler {
 	return &BookHandler{
 		service: service,

@@ -26,7 +26,7 @@ type Book struct {
 	Quantity        int       `json:"quantity" binding:"required,gte=0"`
 }
 
-// CreateBookRequest is the DTO for creating a new book
+// DTO for creating a new book
 type CreateBookRequest struct {
 	AuthorID        string    `json:"authorId" binding:"required,uuid"`
 	PublisherID     string    `json:"publisherId" binding:"required,uuid"`
@@ -40,7 +40,7 @@ type CreateBookRequest struct {
 	Quantity        int       `json:"quantity" binding:"required,gte=0"`
 }
 
-// UpdateBookRequest is the DTO for updating an existing book
+// DTO for updating an existing book
 type UpdateBookRequest struct {
 	AuthorID        string    `json:"authorId" binding:"omitempty,uuid"`
 	PublisherID     string    `json:"publisherId" binding:"omitempty,uuid"`
@@ -54,7 +54,7 @@ type UpdateBookRequest struct {
 	Quantity        int       `json:"quantity" binding:"omitempty,gte=0"`
 }
 
-// BookResponse is the DTO for book responses
+// DTO for book responses
 type BookResponse struct {
 	Book
 }
@@ -65,7 +65,7 @@ func (b *Book) Validate() error {
 	return validate.Struct(b)
 }
 
-// ToBook converts a CreateBookRequest to a Book
+// converts a create book request to a book
 func (r *CreateBookRequest) ToBook(bookID string) Book {
 	return Book{
 		BookID:          bookID,
@@ -82,7 +82,7 @@ func (r *CreateBookRequest) ToBook(bookID string) Book {
 	}
 }
 
-// UpdateBook applies update request data to a book
+// update request data
 func (r *UpdateBookRequest) UpdateBook(book *Book) {
 	if r.AuthorID != "" {
 		book.AuthorID = r.AuthorID

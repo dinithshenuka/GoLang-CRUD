@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Common repository errors
+// Common repo errors
 var (
 	ErrBookNotFound = errors.New("book not found")
 	ErrInvalidID    = errors.New("invalid book ID")
@@ -49,7 +49,7 @@ func (r *JSONFileRepository) loadBooks() ([]models.Book, error) {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 
-	// If file doesn't exist, return empty array
+	// If file doesn't exist
 	if _, err := os.Stat(r.filePath); os.IsNotExist(err) {
 		return []models.Book{}, nil
 	}
@@ -60,7 +60,7 @@ func (r *JSONFileRepository) loadBooks() ([]models.Book, error) {
 		return nil, err
 	}
 
-	// If file is empty, return empty array
+	// If file is empty
 	if len(data) == 0 {
 		return []models.Book{}, nil
 	}
@@ -74,7 +74,7 @@ func (r *JSONFileRepository) loadBooks() ([]models.Book, error) {
 	return books, nil
 }
 
-// saveBooks saves books to the JSON file
+// saves books to the json file
 func (r *JSONFileRepository) saveBooks(books []models.Book) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
@@ -89,12 +89,12 @@ func (r *JSONFileRepository) saveBooks(books []models.Book) error {
 	return os.WriteFile(r.filePath, data, 0644)
 }
 
-// GetAll returns all books
+// return all books
 func (r *JSONFileRepository) GetAll() ([]models.Book, error) {
 	return r.loadBooks()
 }
 
-// GetByID returns a book by ID
+// return a book by ID
 func (r *JSONFileRepository) GetByID(id string) (models.Book, error) {
 	if id == "" {
 		return models.Book{}, ErrInvalidID
@@ -114,14 +114,14 @@ func (r *JSONFileRepository) GetByID(id string) (models.Book, error) {
 	return models.Book{}, ErrBookNotFound
 }
 
-// Create creates a new book
+// Create a new book
 func (r *JSONFileRepository) Create(book models.Book) (models.Book, error) {
 	books, err := r.loadBooks()
 	if err != nil {
 		return models.Book{}, err
 	}
 
-	// Generate a UUID if not provided
+	// Generate a UUID
 	if book.BookID == "" {
 		book.BookID = uuid.New().String()
 	}
@@ -129,7 +129,7 @@ func (r *JSONFileRepository) Create(book models.Book) (models.Book, error) {
 	// Check if book with same ID already exists
 	for _, existingBook := range books {
 		if existingBook.BookID == book.BookID {
-			// Generate a new ID
+			// new ID
 			book.BookID = uuid.New().String()
 			break
 		}
@@ -144,7 +144,7 @@ func (r *JSONFileRepository) Create(book models.Book) (models.Book, error) {
 	return book, nil
 }
 
-// Update updates a book
+// update a book
 func (r *JSONFileRepository) Update(id string, book models.Book) (models.Book, error) {
 	if id == "" {
 		return models.Book{}, ErrInvalidID
@@ -157,7 +157,7 @@ func (r *JSONFileRepository) Update(id string, book models.Book) (models.Book, e
 
 	for i, existingBook := range books {
 		if existingBook.BookID == id {
-			// Ensure ID remains the same
+
 			book.BookID = id
 			books[i] = book
 
@@ -172,7 +172,7 @@ func (r *JSONFileRepository) Update(id string, book models.Book) (models.Book, e
 	return models.Book{}, ErrBookNotFound
 }
 
-// Delete deletes a book
+// delete a book
 func (r *JSONFileRepository) Delete(id string) error {
 	if id == "" {
 		return ErrInvalidID
@@ -201,7 +201,7 @@ func (r *JSONFileRepository) Delete(id string) error {
 	return r.saveBooks(newBooks)
 }
 
-// Search searches for books matching the keyword
+// Search
 func (r *JSONFileRepository) Search(keyword string) ([]models.Book, error) {
 
 	books, err := r.loadBooks()
