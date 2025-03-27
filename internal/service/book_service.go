@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// BookService defines the interface for book business operations
+// interface for book business operations
 type BookService interface {
 	GetAllBooks() ([]models.Book, error)
 	GetBookByID(id string) (models.Book, error)
@@ -29,7 +29,7 @@ type bookService struct {
 	repo repository.BookRepository
 }
 
-// NewBookService creates a new BookService
+// creates a new BookService
 func NewBookService(repo repository.BookRepository) BookService {
 	return &bookService{
 		repo: repo,

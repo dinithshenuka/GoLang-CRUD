@@ -13,20 +13,20 @@ import (
 type ErrorType string
 
 const (
-	// ErrorTypeValidation represents a validation error
+	// validation error
 	ErrorTypeValidation ErrorType = "VALIDATION_ERROR"
 
-	// ErrorTypeNotFound represents a not found error
+	// not found error
 	ErrorTypeNotFound ErrorType = "NOT_FOUND"
 
-	// ErrorTypeDatabase represents a database error
+	// database error
 	ErrorTypeDatabase ErrorType = "DATABASE_ERROR"
 
-	// ErrorTypeInternal represents an internal server error
+	// internal server error
 	ErrorTypeInternal ErrorType = "INTERNAL_ERROR"
 )
 
-// AppError represents an application error
+// application error
 type AppError struct {
 	Type    ErrorType
 	Message string
@@ -41,7 +41,7 @@ func (e *AppError) Error() string {
 	return e.Message
 }
 
-// StatusCode returns the HTTP status code for the error
+// HTTP status code for the error
 func (e *AppError) StatusCode() int {
 	switch e.Type {
 	case ErrorTypeValidation:
@@ -55,14 +55,14 @@ func (e *AppError) StatusCode() int {
 	}
 }
 
-// ErrorResponse represents an error response
+// error response
 type ErrorResponse struct {
 	Error   string `json:"error"`
 	Message string `json:"message,omitempty"`
 	Code    int    `json:"code"`
 }
 
-// NewValidationError creates a new validation error
+// new validation error
 func NewValidationError(message string, err error) *AppError {
 	return &AppError{
 		Type:    ErrorTypeValidation,
@@ -71,7 +71,7 @@ func NewValidationError(message string, err error) *AppError {
 	}
 }
 
-// NewNotFoundError creates a new not found error
+// new not found error
 func NewNotFoundError(message string, err error) *AppError {
 	return &AppError{
 		Type:    ErrorTypeNotFound,
@@ -80,7 +80,7 @@ func NewNotFoundError(message string, err error) *AppError {
 	}
 }
 
-// NewDatabaseError creates a new database error
+// new database error
 func NewDatabaseError(message string, err error) *AppError {
 	return &AppError{
 		Type:    ErrorTypeDatabase,
@@ -89,7 +89,7 @@ func NewDatabaseError(message string, err error) *AppError {
 	}
 }
 
-// NewInternalError creates a new internal error
+// new internal error
 func NewInternalError(message string, err error) *AppError {
 	return &AppError{
 		Type:    ErrorTypeInternal,

@@ -21,7 +21,7 @@ var (
 	ErrInvalidID    = errors.New("invalid book ID")
 )
 
-// BookRepository defines the interface for book data operations
+// interface for book data operations
 type BookRepository interface {
 	GetAll() ([]models.Book, error)
 	GetByID(id string) (models.Book, error)
@@ -31,20 +31,20 @@ type BookRepository interface {
 	Search(keyword string) ([]models.Book, error)
 }
 
-// JSONFileRepository implements BookRepository using a JSON file for persistence
+// JSON file for persistence
 type JSONFileRepository struct {
 	filePath string
 	mutex    sync.RWMutex
 }
 
-// NewJSONFileRepository creates a new JSONFileRepository
+// creates a new JSONFileRepository
 func NewJSONFileRepository(filePath string) *JSONFileRepository {
 	return &JSONFileRepository{
 		filePath: filePath,
 	}
 }
 
-// loadBooks loads books from the JSON file
+// loads books from the JSON file
 func (r *JSONFileRepository) loadBooks() ([]models.Book, error) {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
@@ -203,7 +203,7 @@ func (r *JSONFileRepository) Delete(id string) error {
 
 // Search searches for books matching the keyword
 func (r *JSONFileRepository) Search(keyword string) ([]models.Book, error) {
-	// This basic implementation will be enhanced with concurrency in the service layer
+
 	books, err := r.loadBooks()
 	if err != nil {
 		return nil, err

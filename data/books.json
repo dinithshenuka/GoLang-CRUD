@@ -11,5 +11,70 @@
     "description": "Set in the 1920s, this classic novel explores themes of wealth, love, and the American Dream.",
     "price": 15.99,
     "quantity": 5
+  },
+  {
+    "bookId": "58c93cd5-0b3e-4c6b-b35d-7cc84359218f",
+    "authorId": "e784d39e-e7a7-4cd6-b436-3930bb1215d4",
+    "publisherId": "ec8a0c0c-49f0-4a88-a9b4-7e43d159fb39",
+    "title": "To Kill a Mockingbird",
+    "publicationDate": "1960-07-11T00:00:00Z",
+    "isbn": "9780061120084",
+    "pages": 281,
+    "genre": "Fiction",
+    "description": "A gripping tale of racial injustice and moral growth in the Deep South.",
+    "price": 14.99,
+    "quantity": 8
+  },
+  {
+    "bookId": "5e1c67d0-82d0-46ab-a5aa-0f60b0010fb3",
+    "authorId": "12be5b3a-8f9c-41db-bb24-cab62fe45a7a",
+    "publisherId": "9980f267-c32a-4e4c-b5b0-48c3964a6c6f",
+    "title": "Moby-Dick",
+    "publicationDate": "1851-10-18T00:00:00Z",
+    "isbn": "9781503280786",
+    "pages": 585,
+    "genre": "Adventure",
+    "description": "The journey of the obsessive Captain Ahab and his pursuit of the elusive white whale.",
+    "price": 18.99,
+    "quantity": 6
+  },
+  {
+    "bookId": "c72b8666-8235-4d57-b1a7-a25b56135eb8",
+    "authorId": "902f3b10-7281-4c32-bb35-91b939f3c0db",
+    "publisherId": "fe421a1d-6e1c-4da6-85d6-01431e7b3a59",
+    "title": "Brave New World",
+    "publicationDate": "1932-08-01T00:00:00Z",
+    "isbn": "9780060850524",
+    "pages": 311,
+    "genre": "Science Fiction",
+    "description": "A dystopian novel exploring the effects of technological advancement on society.",
+    "price": 13.99,
+    "quantity": 15
+  },
+  {
+    "bookId": "01259e28-ee98-4c94-b78e-ea126269d961",
+    "authorId": "b3e83c2a-cdd1-40fe-9df4-d7a33ec97a93",
+    "publisherId": "3eae2c90-8f02-4579-8a8b-1b07baba3d56",
+    "title": "The Catcher in the Rye",
+    "publicationDate": "1951-07-16T00:00:00Z",
+    "isbn": "9780316769488",
+    "pages": 277,
+    "genre": "Fiction",
+    "description": "A novel about teenage alienation and the challenges of growing up.",
+    "price": 11.99,
+    "quantity": 9
+  },
+  {
+    "bookId": "3b35db08-1eb7-4891-bf8c-7032b1492090",
+    "authorId": "de9ad33c-36c0-4a48-8bda-e8e5f2342d47",
+    "publisherId": "def37d2e-d8c5-4f56-aad0-1f6ff0b51756",
+    "title": "The Hobbit",
+    "publicationDate": "1937-09-21T00:00:00Z",
+    "isbn": "9780547928227",
+    "pages": 310,
+    "genre": "Fantasy",
+    "description": "The prequel to the Lord of the Rings, following Bilbo Baggins' adventure to recover treasure from a dragon.",
+    "price": 10.99,
+    "quantity": 13
   }
 ]
