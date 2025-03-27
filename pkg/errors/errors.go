@@ -9,21 +9,13 @@ import (
 	"net/http"
 )
 
-// ErrorType represents different types of errors
 type ErrorType string
 
 const (
-	// validation error
 	ErrorTypeValidation ErrorType = "VALIDATION_ERROR"
-
-	// not found error
-	ErrorTypeNotFound ErrorType = "NOT_FOUND"
-
-	// database error
-	ErrorTypeDatabase ErrorType = "DATABASE_ERROR"
-
-	// internal server error
-	ErrorTypeInternal ErrorType = "INTERNAL_ERROR"
+	ErrorTypeNotFound   ErrorType = "NOT_FOUND"
+	ErrorTypeDatabase   ErrorType = "DATABASE_ERROR"
+	ErrorTypeInternal   ErrorType = "INTERNAL_ERROR"
 )
 
 // application error
@@ -33,7 +25,7 @@ type AppError struct {
 	Err     error
 }
 
-// Error returns the error message
+// error message
 func (e *AppError) Error() string {
 	if e.Err != nil {
 		return fmt.Sprintf("%s: %s", e.Message, e.Err.Error())

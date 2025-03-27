@@ -15,13 +15,11 @@ import (
 	"github.com/google/uuid"
 )
 
-// Common repo errors
 var (
 	ErrBookNotFound = errors.New("book not found")
 	ErrInvalidID    = errors.New("invalid book ID")
 )
 
-// interface for book data operations
 type BookRepository interface {
 	GetAll() ([]models.Book, error)
 	GetByID(id string) (models.Book, error)
@@ -31,13 +29,11 @@ type BookRepository interface {
 	Search(keyword string) ([]models.Book, error)
 }
 
-// JSON file for persistence
 type JSONFileRepository struct {
 	filePath string
 	mutex    sync.RWMutex
 }
 
-// creates a new JSONFileRepository
 func NewJSONFileRepository(filePath string) *JSONFileRepository {
 	return &JSONFileRepository{
 		filePath: filePath,
@@ -49,23 +45,19 @@ func (r *JSONFileRepository) loadBooks() ([]models.Book, error) {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 
-	// If file doesn't exist
 	if _, err := os.Stat(r.filePath); os.IsNotExist(err) {
 		return []models.Book{}, nil
 	}
 
-	// Read file
 	data, err := os.ReadFile(r.filePath)
 	if err != nil {
 		return nil, err
 	}
 
-	// If file is empty
 	if len(data) == 0 {
 		return []models.Book{}, nil
 	}
 
-	// Parse JSON
 	var books []models.Book
 	if err := json.Unmarshal(data, &books); err != nil {
 		return nil, err
@@ -79,13 +71,11 @@ func (r *JSONFileRepository) saveBooks(books []models.Book) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
-	// Convert to JSON
 	data, err := json.MarshalIndent(books, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	// Write to file
 	return os.WriteFile(r.filePath, data, 0644)
 }
 
@@ -121,15 +111,13 @@ func (r *JSONFileRepository) Create(book models.Book) (models.Book, error) {
 		return models.Book{}, err
 	}
 
-	// Generate a UUID
 	if book.BookID == "" {
 		book.BookID = uuid.New().String()
 	}
 
-	// Check if book with same ID already exists
 	for _, existingBook := range books {
 		if existingBook.BookID == book.BookID {
-			// new ID
+
 			book.BookID = uuid.New().String()
 			break
 		}

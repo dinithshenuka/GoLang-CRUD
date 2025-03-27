@@ -18,12 +18,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// HTTP requests for books
 type BookHandler struct {
 	service service.BookService
 }
 
-// creates a new BookHandler
 func NewBookHandler(service service.BookService) *BookHandler {
 	return &BookHandler{
 		service: service,
@@ -59,17 +57,14 @@ func (h *BookHandler) GetBooks(c *gin.Context) {
 		return
 	}
 
-	// Create pagination params
 	pagination := models.NewPaginationParams(limit, offset)
 
-	// Get paginated books from service
 	books, totalCount, err := h.service.GetPaginatedBooks(pagination)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Create paginated response
 	response := models.NewPaginatedResponse(books, totalCount, pagination.Limit, pagination.Offset)
 
 	c.JSON(http.StatusOK, response)
@@ -122,7 +117,6 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 		return
 	}
 
-	// Parse the publication date if it's a string
 	if c.ContentType() == "application/json" {
 		dateStr := c.PostForm("publicationDate")
 		if dateStr != "" {
@@ -164,7 +158,6 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 		return
 	}
 
-	// Parse the publication date if it's a string
 	if c.ContentType() == "application/json" {
 		dateStr := c.PostForm("publicationDate")
 		if dateStr != "" {

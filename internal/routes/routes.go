@@ -10,8 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SetupRoutes configures all API routes
 func SetupRoutes(r *gin.Engine, bookHandler *handlers.BookHandler) {
+
 	// Book routes
 	bookRoutes := r.Group("/books")
 	{

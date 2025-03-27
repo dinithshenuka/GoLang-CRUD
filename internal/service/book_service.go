@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// interface for book business operations
 type BookService interface {
 	GetAllBooks() ([]models.Book, error)
 	GetPaginatedBooks(params models.PaginationParams) ([]models.Book, int, error)
@@ -30,7 +29,6 @@ type bookService struct {
 	repo repository.BookRepository
 }
 
-// creates a new BookService
 func NewBookService(repo repository.BookRepository) BookService {
 	return &bookService{
 		repo: repo,

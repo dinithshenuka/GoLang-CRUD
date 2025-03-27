@@ -17,14 +17,14 @@ eval $(minikube docker-env)
 
 # Build the docker image
 echo "Building Docker image..."
-docker build -t golang-crud:v1 ..
+docker build -t golang-crud:v1 .
 
 # Apply Kubernetes manifests
 echo "Applying Kubernetes manifests..."
-kubectl apply -f configmap.yaml
-kubectl apply -f persistence.yaml
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/persistence.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
 
 # Wait for deployment to be ready
 echo "Waiting for deployment to be ready..."

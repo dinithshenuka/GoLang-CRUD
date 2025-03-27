@@ -20,7 +20,6 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	//local imports
 	"GoLang-CRUD/docs"
 	"GoLang-CRUD/internal/handlers"
 	"GoLang-CRUD/internal/repository"
@@ -28,57 +27,48 @@ import (
 	"GoLang-CRUD/internal/service"
 )
 
-// @title Book API
-// @version 1.0
-// @description A RESTful API for managing books with CRUD operations
-// @host localhost:8080
-// @BasePath /
-// @schemes http
 func main() {
 	// Load environment variables
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using default environment")
 	}
 
-	// Set up Gin
 	r := gin.Default()
 
-	// Set up CORS
 	r.Use(corsMiddleware())
 
-	// Get data directory from environment or use default
+	// Initialize data storage
 	dataDir := os.Getenv("DATA_DIR")
 	if dataDir == "" {
 		dataDir = "./data"
 	}
 
-	// Ensure data directory exists
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		log.Fatalf("Failed to create data directory: %v", err)
 	}
 
-	// Set up
+	// Setup application components
 	bookFile := fmt.Sprintf("%s/books.json", dataDir)
 	repo := repository.NewJSONFileRepository(bookFile)
 	bookService := service.NewBookService(repo)
 	bookHandler := handlers.NewBookHandler(bookService)
 	routes.SetupRoutes(r, bookHandler)
+
+	// Configure Swagger documentation
 	docs.SwaggerInfo.BasePath = "/"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Get port from env
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	// Create server
+	// Configure and start HTTP server
 	srv := &http.Server{
 		Addr:    ":" + port,
 		Handler: r,
 	}
 
-	// Start server in a goroutine
 	go func() {
 		log.Printf("Server starting on port %s", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -86,17 +76,15 @@ func main() {
 		}
 	}()
 
-	// shut down the server
+	// Handle shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
 
-	// Create a deadline for shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Attempt graceful shutdown
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
@@ -104,7 +92,7 @@ func main() {
 	log.Println("Server exited properly")
 }
 
-// CORS middleware
+// configure CORS headers for all requests
 func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
